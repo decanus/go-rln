@@ -13,14 +13,22 @@ type RLN struct {
 	ptr *C.RLN_Bn256
 }
 
+func New(depth int, parameters []byte) *RLN {
+	r := &RLN{}
+
+	buf := toBuffer(parameters)
+	C.new_circuit_from_params(C.ulong(depth), &buf, &r.ptr)
+
+	return r
+}
+
 func (r *RLN) Hash(input []byte) []byte {
 	size := int(unsafe.Sizeof(C.Buffer{}))
-
-	size = int(unsafe.Sizeof(C.Buffer{}))
 	in := (*C.Buffer)(C.malloc(C.size_t(size)))
+	*in = toBuffer(input)
 
 	out := (*C.Buffer)(C.malloc(C.size_t(size)))
-	C.hash(r.ptr, in, size, out)
+	C.hash(r.ptr, in, &in.len, out)
 
 	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len))
 }
