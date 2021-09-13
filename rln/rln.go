@@ -76,18 +76,33 @@ func (r *RLN) Hash(input []byte) ([]byte, error) {
 	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len)), nil
 }
 
-func (r *RLN) GenerateProof(input, output []byte) bool {
+// GenerateProof generates a proof for the RLN.
+func (r *RLN) GenerateProof(input []byte) ([]byte, error) {
 	inputBuf := toBuffer(input)
-	outputBuf := toBuffer(output)
 
-	return bool(C.generate_proof(r.ptr, &inputBuf, &outputBuf))
+	var output []byte
+	out := toBuffer(output)
+
+	if !bool(C.generate_proof(r.ptr, &inputBuf, &out)) {
+		return nil, errors.New("failed to generate proof")
+	}
+
+	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len)), nil
 }
 
-func (r *RLN) Verify(proof []byte, publicInputs []byte, result uint32) bool {
+// Verify verifies a proof generated for the RLN.
+func (r *RLN) Verify(proof []byte, publicInputs []byte) bool {
 	proofBuf := toBuffer(proof)
 	inputs := toBuffer(publicInputs)
+
+	result := uint32(0)
 	res := C.uint(result)
-	return bool(C.verify(r.ptr, &proofBuf, &inputs, &res))
+	if !bool(C.verify(r.ptr, &proofBuf, &inputs, &res)) {
+		// @TODO THINK ABOUT ERROR?
+		return false
+	}
+
+	return uint32(res) == 0
 }
 
 func toBuffer(data []byte) C.Buffer {
