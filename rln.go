@@ -1,11 +1,9 @@
 package main
 
-/*
-#cgo CFLAGS: -I../lib
-#include "./lib/librln.h"
-*/
-import "C"
+import "github.com/decanus/go-rln/pkg/rln"
 
 func main() {
+	r := &rln.RLN{}
+	r.GenerateKey()
 	//C
 }
