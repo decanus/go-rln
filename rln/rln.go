@@ -14,11 +14,16 @@ type RLN struct {
 }
 
 func (r *RLN) Hash(input []byte) []byte {
-	out := &C.Buffer{}
+	size := int(unsafe.Sizeof(C.Buffer{}))
+	out_ptr := C.malloc(C.size_t(size))
 
-	in := toBuffer(input)
+	size = int(unsafe.Sizeof(C.Buffer{}))
+	in_ptr := C.malloc(C.size_t(size))
+  in := (*C.Buffer)(in_ptr)
+	*in = toBuffer(input)
 
-	C.hash(r.ptr, &in, &in.len, out)
+  out := (*C.Buffer)(out_ptr)
+	C.hash(r.ptr, in, &in.len, out)
 
 	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len))
 }
