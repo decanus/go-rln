@@ -17,7 +17,12 @@ func New(depth int, parameters []byte) *RLN {
 	r := &RLN{}
 
 	buf := toBuffer(parameters)
-	C.new_circuit_from_params(C.ulong(depth), &buf, &r.ptr)
+
+	size := int(unsafe.Sizeof(buf))
+	in := (*C.Buffer)(C.malloc(C.size_t(size)))
+	*in = buf
+
+	C.new_circuit_from_params(C.ulong(depth), in, &r.ptr)
 
 	return r
 }

@@ -1,10 +1,19 @@
 package rln
 
 import (
+	"io/ioutil"
 	"testing"
 )
 
-func TestHash(t *testing.T) {
-	rln := New(0, []byte{})
-	rln.Hash([]byte{1, 2, 3})
+func TestNew(t *testing.T) {
+	params, err := ioutil.ReadFile("./testdata/parameters.key")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rln := New(32, params)
+
+	if rln.ptr == nil {
+		t.Fatal("pointer not initialized.")
+	}
 }
