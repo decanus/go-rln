@@ -8,4 +8,4 @@ Further research can be found here:
  - https://github.com/vacp2p/research/tree/master/rln-research
  - https://ethresear.ch/t/semaphore-rln-rate-limiting-nullifier-for-spam-prevention-in-anonymous-p2p-setting/5009
 
-The goal of this is to create a block submission rate-limiter for [Celestia](https://celestia.org/)
+The goal of this is to create a rate-limiter for blockchains where block production is cheap.
