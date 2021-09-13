@@ -20,7 +20,7 @@ func (r *RLN) Hash(input []byte) []byte {
 
 	C.hash(r.ptr, &in, &in.len, out)
 
-	return []byte{}
+	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len))
 }
 
 func (r *RLN) CircuitFromParams(depth int, parameters []byte) bool {
