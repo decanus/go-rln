@@ -42,6 +42,26 @@ func New(depth int, parameters []byte) (*RLN, error) {
 	return r, nil
 }
 
+// GenerateKey generates a KeyPair for an RLN.
+func (r *RLN) GenerateKey() (*KeyPair, error) {
+	buffer := toBuffer([]byte{})
+	if !bool(C.key_gen(r.ptr, &buffer)) {
+		return nil, errors.New("failed to genenrate key")
+	}
+
+	key := &KeyPair{
+		Key:        [32]byte{},
+		Commitment: [32]byte{},
+	}
+
+	b := C.GoBytes(unsafe.Pointer(buffer.ptr), C.int(buffer.len))
+
+	copy(key.Key[:], b[:32])
+	copy(key.Commitment[:], b[32:64])
+
+	return key, nil
+}
+
 func (r *RLN) Hash(input []byte) []byte {
 	size := int(unsafe.Sizeof(C.Buffer{}))
 	in := (*C.Buffer)(C.malloc(C.size_t(size)))
@@ -64,25 +84,6 @@ func (r *RLN) GenerateProof(input, output []byte) bool {
 	outputBuf := toBuffer(output)
 
 	return bool(C.generate_proof(r.ptr, &inputBuf, &outputBuf))
-}
-
-func (r *RLN) GenerateKey() (*KeyPair, error) {
-	buffer := toBuffer([]byte{})
-	if !bool(C.key_gen(r.ptr, &buffer)) {
-		return nil, errors.New("failed to genenrate key")
-	}
-
-	key := &KeyPair{
-		Key:        [32]byte{},
-		Commitment: [32]byte{},
-	}
-
-	b := C.GoBytes(unsafe.Pointer(buffer.ptr), C.int(buffer.len))
-
-	copy(key.Key[:], b[:32])
-	copy(key.Commitment[:], b[:32])
-
-	return key, nil
 }
 
 func (r *RLN) Verify(proof []byte, publicInputs []byte, result uint32) bool {
