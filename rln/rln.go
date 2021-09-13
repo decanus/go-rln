@@ -76,12 +76,6 @@ func (r *RLN) Hash(input []byte) ([]byte, error) {
 	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len)), nil
 }
 
-func (r *RLN) CircuitFromParams(depth int, parameters []byte) bool {
-	ptr := r.ptr
-	buf := toBuffer(parameters)
-	return bool(C.new_circuit_from_params(C.ulong(depth), &buf, &ptr))
-}
-
 func (r *RLN) GenerateProof(input, output []byte) bool {
 	inputBuf := toBuffer(input)
 	outputBuf := toBuffer(output)
