@@ -2,3 +2,5 @@
 rlnlib:
 	cd lib/rln && cargo build --release
 	cp lib/rln/target/release/librln.* lib/
+
+# @TODO TARGET FOR BINDINGS.
