@@ -1,3 +1,6 @@
 [submodule "rln"]
 	path = lib/rln
 	url = https://github.com/kilic/rln
+[submodule "lib/rln"]
+	path = lib/rln
+	url = git@github.com:kilic/rln.git
