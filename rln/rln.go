@@ -62,15 +62,18 @@ func (r *RLN) GenerateKey() (*KeyPair, error) {
 	return key, nil
 }
 
-func (r *RLN) Hash(input []byte) []byte {
+// Hash hashes a given input using the underlying function.
+func (r *RLN) Hash(input []byte) ([]byte, error) {
 	size := int(unsafe.Sizeof(C.Buffer{}))
 	in := (*C.Buffer)(C.malloc(C.size_t(size)))
 	*in = toBuffer(input)
 
 	out := (*C.Buffer)(C.malloc(C.size_t(size)))
-	C.hash(r.ptr, in, &in.len, out)
+	if !bool(C.hash(r.ptr, in, &in.len, out)) {
+		return nil, errors.New("failed to hash")
+	}
 
-	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len))
+	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len)), nil
 }
 
 func (r *RLN) CircuitFromParams(depth int, parameters []byte) bool {
