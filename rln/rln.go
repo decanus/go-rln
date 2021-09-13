@@ -6,6 +6,7 @@ package rln
 import "C"
 
 import (
+	"errors"
 	"unsafe"
 )
 
@@ -13,7 +14,7 @@ type RLN struct {
 	ptr *C.RLN_Bn256
 }
 
-func New(depth int, parameters []byte) *RLN {
+func New(depth int, parameters []byte) (*RLN, error) {
 	r := &RLN{}
 
 	buf := toBuffer(parameters)
@@ -22,9 +23,11 @@ func New(depth int, parameters []byte) *RLN {
 	in := (*C.Buffer)(C.malloc(C.size_t(size)))
 	*in = buf
 
-	C.new_circuit_from_params(C.ulong(depth), in, &r.ptr)
+	if bool(C.new_circuit_from_params(C.ulong(depth), in, &r.ptr)) {
+		return nil, errors.New("failed to initialize")
+	}
 
-	return r
+	return r, nil
 }
 
 func (r *RLN) Hash(input []byte) []byte {
@@ -56,11 +59,11 @@ func (r *RLN) GenerateKey(buf []byte) bool {
 	return bool(C.key_gen(r.ptr, &buffer))
 }
 
-func (r *RLN) Verify(proof []byte, publicInputs []byte, result uint32) {
+func (r *RLN) Verify(proof []byte, publicInputs []byte, result uint32) bool {
 	proofBuf := toBuffer(proof)
 	inputs := toBuffer(publicInputs)
 	res := C.uint(result)
-	C.verify(r.ptr, &proofBuf, &inputs, &res)
+	return bool(C.verify(r.ptr, &proofBuf, &inputs, &res))
 }
 
 func toBuffer(data []byte) C.Buffer {

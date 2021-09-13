@@ -1,8 +1,10 @@
-package rln
+package rln_test
 
 import (
 	"io/ioutil"
 	"testing"
+
+	"github.com/decanus/go-rln/rln"
 )
 
 func TestNew(t *testing.T) {
@@ -11,9 +13,8 @@ func TestNew(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rln := New(32, params)
-
-	if rln.ptr == nil {
-		t.Fatal("pointer not initialized.")
+	_, err = rln.New(32, params)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
