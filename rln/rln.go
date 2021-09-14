@@ -113,8 +113,11 @@ func (r *RLN) Verify(proof []byte) bool {
 }
 
 func (r *RLN) UpdateNextMember(input []byte) error {
-	buf := toBuffer(input)
-	if !bool(C.update_next_member(r.ptr, &buf)) {
+	size := int(unsafe.Sizeof(C.Buffer{}))
+	in := (*C.Buffer)(C.malloc(C.size_t(size)))
+	*in = toBuffer(input)
+
+	if !bool(C.update_next_member(r.ptr, in)) {
 		return errors.New("failed to update next member")
 	}
 

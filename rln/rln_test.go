@@ -61,9 +61,30 @@ func TestRLN_Verify(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	_, err = r.GenerateKey()
+	index := 5
+
+	auth, err := r.GenerateKey()
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	for i := 0; i < 10; i++ {
+		if i == index {
+			err := r.UpdateNextMember(auth.Commitment[:])
+			if err != nil {
+				t.Fatalf("failed to add member: %s", err)
+			}
+		} else {
+			key, err := r.GenerateKey()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = r.UpdateNextMember(key.Commitment[:])
+			if err != nil {
+				t.Fatalf("failed to add member: %s", err)
+			}
+		}
 	}
 
 	// @TODO create inputs
