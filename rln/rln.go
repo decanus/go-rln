@@ -25,6 +25,8 @@ type KeyPair struct {
 	Commitment [32]byte
 }
 
+// @TODO THINK ABOUT AUTH OBJECT
+
 // New returns a new RLN generated from the passed depth and parameters.
 func New(depth int, parameters []byte) (*RLN, error) {
 	r := &RLN{}
@@ -69,21 +71,27 @@ func (r *RLN) Hash(input []byte) ([]byte, error) {
 	*in = toBuffer(input)
 
 	out := (*C.Buffer)(C.malloc(C.size_t(size)))
-	if !bool(C.hash(r.ptr, in, &in.len, out)) {
+	if !bool(C.hash(r.ptr, in, in.len, out)) {
 		return nil, errors.New("failed to hash")
 	}
 
 	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len)), nil
 }
 
-// GenerateProof generates a proof for the RLN.
-func (r *RLN) GenerateProof(input []byte) ([]byte, error) {
+// GenerateProof generates a proof for the RLN given a KeyPair and the index in a merkle tree.
+func (r *RLN) GenerateProof(input []byte, key *KeyPair, index uint) ([]byte, error) {
 	inputBuf := toBuffer(input)
 
 	var output []byte
 	out := toBuffer(output)
 
-	if !bool(C.generate_proof(r.ptr, &inputBuf, &out)) {
+	keybuf := toBuffer(key.Key[:])
+	auth := &C.Auth{
+		secret_buffer: &keybuf,
+		index:         C.ulong(index),
+	}
+
+	if !bool(C.generate_proof(r.ptr, &inputBuf, auth, &out)) {
 		return nil, errors.New("failed to generate proof")
 	}
 
@@ -91,18 +99,45 @@ func (r *RLN) GenerateProof(input []byte) ([]byte, error) {
 }
 
 // Verify verifies a proof generated for the RLN.
-func (r *RLN) Verify(proof []byte, publicInputs []byte) bool {
+func (r *RLN) Verify(proof []byte) bool {
 	proofBuf := toBuffer(proof)
-	inputs := toBuffer(publicInputs)
 
 	result := uint32(0)
 	res := C.uint(result)
-	if !bool(C.verify(r.ptr, &proofBuf, &inputs, &res)) {
+	if !bool(C.verify(r.ptr, &proofBuf, &res)) {
 		// @TODO THINK ABOUT ERROR?
 		return false
 	}
 
 	return uint32(res) == 0
+}
+
+func (r *RLN) UpdateNextMember(input []byte) error {
+	buf := toBuffer(input)
+	if !bool(C.update_next_member(r.ptr, &buf)) {
+		return errors.New("failed to update next member")
+	}
+
+	return nil
+}
+
+func (r *RLN) DeleteMember(index int) error {
+	if !bool(C.delete_member(r.ptr, C.ulong(index))) {
+		return errors.New("failed to delete member")
+	}
+
+	return nil
+}
+
+func (r *RLN) GetRoot() ([]byte, error) {
+	var output []byte
+	out := toBuffer(output)
+
+	if !bool(C.get_root(r.ptr, &out)) {
+		return nil, errors.New("failed to get root")
+	}
+
+	return C.GoBytes(unsafe.Pointer(out.ptr), C.int(out.len)), nil
 }
 
 func toBuffer(data []byte) C.Buffer {
