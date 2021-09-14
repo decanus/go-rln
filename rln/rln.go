@@ -70,7 +70,7 @@ func (r *RLN) Hash(input []byte) ([]byte, error) {
 	buf := toBuffer(input)
 	size := int(unsafe.Sizeof(buf))
 	in := (*C.Buffer)(C.malloc(C.size_t(size)))
-	*in = toBuffer(input)
+	*in = buf
 
 	var output []byte
 	out := toBuffer(output)
