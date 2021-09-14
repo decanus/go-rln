@@ -75,7 +75,7 @@ func (r *RLN) Hash(input []byte) ([]byte, error) {
 	var output []byte
 	out := toBuffer(output)
 
-	if !bool(C.hash(r.ptr, in, in.len, &out)) {
+	if !bool(C.hash(r.ptr, in, 1, &out)) {
 		return nil, errors.New("failed to hash")
 	}
 
