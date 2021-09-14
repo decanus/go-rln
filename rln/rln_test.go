@@ -69,10 +69,10 @@ func TestRLN_Hash(t *testing.T) {
 }
 
 func byteArray(length int, value byte) []byte {
-	arr := make([]byte, 0)
+	arr := make([]byte, length)
 
 	for i := 0; i < length; i++ {
-		arr = append(arr, value)
+		arr[i] = value
 	}
 
 	return arr
