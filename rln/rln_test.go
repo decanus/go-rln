@@ -73,6 +73,35 @@ func TestRLN_Hash(t *testing.T) {
 	}
 }
 
+func TestRLN_GetRoot(t *testing.T) {
+	// This test is based on tests from:
+	// https://github.com/status-im/nim-waku/blob/b7998de09d1ef04599a699938da69aecfa63cc6f/tests/v2/test_waku_rln_relay.nim#L320
+
+	params, err := ioutil.ReadFile("./testdata/parameters.key")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	r, err := rln.New(32, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	root1, err := r.GetRoot()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	root2, err := r.GetRoot()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if hex.EncodeToString(root1) != hex.EncodeToString(root2) {
+		t.Fatalf("value %x did not match expected %x", root1, root2)
+	}
+}
+
 func byteArray(length int, value byte) []byte {
 	arr := make([]byte, length)
 
