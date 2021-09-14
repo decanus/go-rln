@@ -14,22 +14,31 @@ typedef struct Buffer {
   uintptr_t len;
 } Buffer;
 
+typedef struct Auth {
+  const struct Buffer *secret_buffer;
+  uintptr_t index;
+} Auth;
+
 bool new_circuit_from_params(uintptr_t merkle_depth,
                              const struct Buffer *parameters_buffer,
                              struct RLN_Bn256 **ctx);
 
+bool get_root(const struct RLN_Bn256 *ctx, struct Buffer *output_buffer);
+
+bool update_next_member(struct RLN_Bn256 *ctx, const struct Buffer *input_buffer);
+
+bool delete_member(struct RLN_Bn256 *ctx, uintptr_t index);
+
 bool generate_proof(const struct RLN_Bn256 *ctx,
                     const struct Buffer *input_buffer,
+                    const struct Auth *auth,
                     struct Buffer *output_buffer);
 
-bool verify(const struct RLN_Bn256 *ctx,
-            const struct Buffer *proof_buffer,
-            const struct Buffer *public_inputs_buffer,
-            uint32_t *result_ptr);
+bool verify(const struct RLN_Bn256 *ctx, struct Buffer *proof_buffer, uint32_t *result_ptr);
 
 bool hash(const struct RLN_Bn256 *ctx,
           const struct Buffer *inputs_buffer,
-          const uintptr_t *input_len,
+          uintptr_t input_len,
           struct Buffer *output_buffer);
 
 bool key_gen(const struct RLN_Bn256 *ctx, struct Buffer *keypair_buffer);
