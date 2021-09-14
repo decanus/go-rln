@@ -66,14 +66,16 @@ func (r *RLN) GenerateKey() (*KeyPair, error) {
 
 // Hash hashes a given input using the underlying function.
 func (r *RLN) Hash(input []byte) ([]byte, error) {
-	size := int(unsafe.Sizeof(C.Buffer{}))
 
+	buf := toBuffer(input)
+	size := int(unsafe.Sizeof(buf))
 	in := (*C.Buffer)(C.malloc(C.size_t(size)))
 	*in = toBuffer(input)
 
-	out := (*C.Buffer)(C.malloc(C.size_t(size)))
+	var output []byte
+	out := toBuffer(output)
 
-	if !bool(C.hash(r.ptr, in, in.len, out)) {
+	if !bool(C.hash(r.ptr, in, in.len, &out)) {
 		return nil, errors.New("failed to hash")
 	}
 
